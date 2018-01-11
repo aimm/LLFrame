@@ -317,7 +317,6 @@
 			children = (
 				3C20EBEF1FE898FB0014B7F1 /* AppDelegate.h */,
 				3C20EBF01FE898FB0014B7F1 /* AppDelegate.m */,
-				3C4916D51FF62FD80051D7B9 /* Images */,
 				3C4916D41FF62FD60051D7B9 /* Frame */,
 				3C4916D31FF62FD30051D7B9 /* Business */,
 				3C4916D11FF62FB00051D7B9 /* Supporting Files */,
@@ -389,13 +388,6 @@
 				3C4916D71FF6319D0051D7B9 /* Extension */,
 			);
 			path = Frame;
-			sourceTree = "<group>";
-		};
-		3C4916D51FF62FD80051D7B9 /* Images */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			path = Images;
 			sourceTree = "<group>";
 		};
 		3C4916D61FF630B80051D7B9 /* Base */ = {
