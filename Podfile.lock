@@ -1,0 +1,192 @@
+PODS:
+  - AFNetworking (3.1.0):
+    - AFNetworking/NSURLSession (= 3.1.0)
+    - AFNetworking/Reachability (= 3.1.0)
+    - AFNetworking/Security (= 3.1.0)
+    - AFNetworking/Serialization (= 3.1.0)
+    - AFNetworking/UIKit (= 3.1.0)
+  - AFNetworking/NSURLSession (3.1.0):
+    - AFNetworking/Reachability
+    - AFNetworking/Security
+    - AFNetworking/Serialization
+  - AFNetworking/Reachability (3.1.0)
+  - AFNetworking/Security (3.1.0)
+  - AFNetworking/Serialization (3.1.0)
+  - AFNetworking/UIKit (3.1.0):
+    - AFNetworking/NSURLSession
+  - Bugly (2.5.0)
+  - ChameleonFramework (2.1.0):
+    - ChameleonFramework/Default (= 2.1.0)
+  - ChameleonFramework/Default (2.1.0)
+  - CHTCollectionViewWaterfallLayout (0.9.7):
+    - CHTCollectionViewWaterfallLayout/ObjC (= 0.9.7)
+  - CHTCollectionViewWaterfallLayout/ObjC (0.9.7)
+  - DACircularProgress (2.3.1)
+  - DZNEmptyDataSet (1.8.1)
+  - EAIntroView (2.12.0):
+    - EARestrictedScrollView (~> 1.1.0)
+  - EARestrictedScrollView (1.1.0)
+  - FDFullscreenPopGesture (1.1)
+  - HCSStarRatingView (1.5)
+  - HexColors (4.0.0)
+  - IDMPhotoBrowser (1.11.3):
+    - DACircularProgress
+    - pop
+    - SDWebImage (= 4.0.0)
+  - INTULocationManager (4.2.0)
+  - IQKeyboardManager (5.0.6)
+  - JCore (1.1.6)
+  - JPush (3.0.7):
+    - JCore (~> 1.1.6)
+  - MJRefresh (3.1.15.1)
+  - mob_sharesdk (4.0.4):
+    - mob_sharesdk/ShareSDK (= 4.0.4)
+    - MOBFoundation
+  - mob_sharesdk/ShareSDK (4.0.4):
+    - MOBFoundation
+  - mob_sharesdk/ShareSDKConfigurationFile (4.0.4):
+    - MOBFoundation
+  - mob_sharesdk/ShareSDKExtension (4.0.4):
+    - MOBFoundation
+  - mob_sharesdk/ShareSDKPlatforms/Copy (4.0.4):
+    - MOBFoundation
+  - mob_sharesdk/ShareSDKPlatforms/QQ (4.0.4):
+    - MOBFoundation
+  - mob_sharesdk/ShareSDKPlatforms/SinaWeibo (4.0.4):
+    - MOBFoundation
+  - mob_sharesdk/ShareSDKPlatforms/WeChatFull (4.0.4):
+    - MOBFoundation
+  - mob_sharesdk/ShareSDKUI (4.0.4):
+    - MOBFoundation
+  - MOBFoundation (3.0.6)
+  - NJKWebViewProgress (0.2.3):
+    - NJKWebViewProgress/Core (= 0.2.3)
+    - NJKWebViewProgress/ProgressView (= 0.2.3)
+  - NJKWebViewProgress/Core (0.2.3)
+  - NJKWebViewProgress/ProgressView (0.2.3)
+  - PINCache (3.0.1-beta.5):
+    - PINCache/Arc-exception-safe (= 3.0.1-beta.5)
+    - PINCache/Core (= 3.0.1-beta.5)
+  - PINCache/Arc-exception-safe (3.0.1-beta.5):
+    - PINCache/Core
+  - PINCache/Core (3.0.1-beta.5):
+    - PINOperation (= 1.0.3)
+  - PINOperation (1.0.3)
+  - PINRemoteImage/Core (3.0.0-beta.12):
+    - PINOperation
+  - PINRemoteImage/iOS (3.0.0-beta.12):
+    - PINRemoteImage/Core
+  - PINRemoteImage/PINCache (3.0.0-beta.12):
+    - PINCache (= 3.0.1-beta.5)
+    - PINRemoteImage/Core
+  - pop (1.0.10)
+  - PPTopMostController (0.0.1)
+  - PYSearch (0.8.7)
+  - ReactiveObjC (3.0.0)
+  - RMessage (2.1.5):
+    - HexColors (~> 4.0)
+    - PPTopMostController
+  - SDAutoLayout (2.1.9)
+  - SDCycleScrollView (1.75):
+    - SDWebImage (>= 4.0.0)
+  - SDWebImage (4.0.0):
+    - SDWebImage/Core (= 4.0.0)
+  - SDWebImage/Core (4.0.0)
+  - SMPageControl (1.2)
+  - STPopup (1.8.3)
+  - SVProgressHUD (2.2.2)
+  - Texture (2.5.1):
+    - Texture/PINRemoteImage (= 2.5.1)
+  - Texture/Core (2.5.1)
+  - Texture/PINRemoteImage (2.5.1):
+    - PINRemoteImage/iOS (= 3.0.0-beta.12)
+    - PINRemoteImage/PINCache
+    - Texture/Core
+  - TZImagePickerController (1.9.6)
+  - WMPageController (2.5.0)
+  - YTKNetwork (2.0.4):
+    - AFNetworking (~> 3.0)
+  - YYKit (1.0.9):
+    - YYKit/no-arc (= 1.0.9)
+  - YYKit/no-arc (1.0.9)
+
+DEPENDENCIES:
+  - Bugly
+  - ChameleonFramework
+  - CHTCollectionViewWaterfallLayout (~> 0.9)
+  - DZNEmptyDataSet
+  - EAIntroView
+  - FDFullscreenPopGesture (= 1.1)
+  - HCSStarRatingView (~> 1.5)
+  - IDMPhotoBrowser
+  - INTULocationManager
+  - IQKeyboardManager
+  - JPush
+  - MJRefresh
+  - mob_sharesdk
+  - mob_sharesdk/ShareSDKConfigurationFile
+  - mob_sharesdk/ShareSDKExtension
+  - mob_sharesdk/ShareSDKPlatforms/Copy
+  - mob_sharesdk/ShareSDKPlatforms/QQ
+  - mob_sharesdk/ShareSDKPlatforms/SinaWeibo
+  - mob_sharesdk/ShareSDKPlatforms/WeChatFull
+  - mob_sharesdk/ShareSDKUI
+  - NJKWebViewProgress
+  - PYSearch
+  - ReactiveObjC (~> 3.0.0)
+  - RMessage
+  - SDAutoLayout (~> 2.1.3)
+  - SDCycleScrollView (~> 1.75)
+  - SMPageControl
+  - STPopup
+  - SVProgressHUD
+  - Texture
+  - TZImagePickerController
+  - WMPageController
+  - YTKNetwork
+  - YYKit
+
+SPEC CHECKSUMS:
+  AFNetworking: 5e0e199f73d8626b11e79750991f5d173d1f8b67
+  Bugly: 00c8701f2bebab4887771ba43afbf51334009742
+  ChameleonFramework: d21a3cc247abfe5e37609a283a8238b03575cf64
+  CHTCollectionViewWaterfallLayout: 9d11068fafecac106695bb5a5d6d0f738483b598
+  DACircularProgress: 4dd437c0fc3da5161cb289e07ac449493d41db71
+  DZNEmptyDataSet: 9525833b9e68ac21c30253e1d3d7076cc828eaa7
+  EAIntroView: 249559079ddfdbe80e5bcb755c04c3b964b2ac27
+  EARestrictedScrollView: b0c2a3f92fb2610bb44d71c5e4893777c89e45ef
+  FDFullscreenPopGesture: a8a620179e3d9c40e8e00256dcee1c1a27c6d0f0
+  HCSStarRatingView: 1d18f79654735514cd6f00e6d90e38cb6320dc31
+  HexColors: 5f95843ef89aff6a72e1fd3a8ebabf205cc43379
+  IDMPhotoBrowser: b96159fe4adb991a844068eb17dab9c0b7d7e51a
+  INTULocationManager: 73f8254b3d05c897c56bb13c190e5b7c648c0998
+  IQKeyboardManager: 077b7f691dfa9d69db9cff66f2bed68ebfc02d9b
+  JCore: 18fc8725124f26e55625eaf224659b3a999dcf63
+  JPush: 111b79b8a0169ab8fd4c486dac3ed166ed69293e
+  MJRefresh: 5f8552bc25ca8751c010f621c1098dbdaacbccd6
+  mob_sharesdk: b3ac49261b0e56d9e305d473c70bcde2e3a6e8ff
+  MOBFoundation: 6f6ec1c2513278551f1a808b5692e983d99e5069
+  NJKWebViewProgress: f481fd424cb5ecc27eacae11b5397db92fba9a4d
+  PINCache: 98e7b1ef782824ad231ade51987c218b758c30d8
+  PINOperation: ac23db44796d4a564ecf9b5ea7163510f579b71d
+  PINRemoteImage: 0cefe720c2612960bd360710efbd6c73a1991d5f
+  pop: 82ca6b068ce9278fd350fd9dd09482a0ce9492e6
+  PPTopMostController: 4e6f1e5f8c645bdcc74cd837a20f607ff262c048
+  PYSearch: 8b58c757c7756cb1a8174a28def03e51700892ff
+  ReactiveObjC: ce79989e8684b9086b5f8d0c74bc7b81a8729c9e
+  RMessage: 31d44bd26a8f353f987d2e7194f3e9ffb203cbf2
+  SDAutoLayout: 6b6f4db0d009dfc46cef14ef710dbb164e86616c
+  SDCycleScrollView: 884b88f0266dd4708a0e1934975c69cb971707b1
+  SDWebImage: 76a6348bdc74eb5a55dd08a091ef298e56b55e41
+  SMPageControl: 922892813001cfaf059e86e6801f46a967e9ee29
+  STPopup: da1167250a01584af7bcccb898653185f223ec46
+  SVProgressHUD: 59b2d3dabacbd051576d21d32293ca7228dc18b0
+  Texture: c3f06e344aa091667b7a56002e525cde674d021a
+  TZImagePickerController: 276dc7c0cc70da9ee354046474b405d87ef81c89
+  WMPageController: 9dfb2e5a3dd2cc623df19e608a96ee00c03bbfa2
+  YTKNetwork: df8a7a5597bda1664a4efaa7ef871a818a887fe0
+  YYKit: 7cda43304a8dc3696c449041e2cb3107b4e236e7
+
+PODFILE CHECKSUM: c203b533389178abb8e9be292fbd63b5b68e3ce4
+
+COCOAPODS: 1.3.1
