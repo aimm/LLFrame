@@ -6,9 +6,9 @@
 //  Copyright © 2017年 Hailong Guo. All rights reserved.
 //
 
-#import <UIKit/UIKit.h>
+#import <CYLTabBarController/CYLTabBarController.h>
 
-@interface MainTabBarController : UITabBarController
+@interface MainTabBarController : CYLTabBarController
 
 + (instancetype)mainTabBarController;
 

@@ -12,7 +12,7 @@
 
 @interface ShareHelper : NSObject
 
-+ (void)config;
+//+ (void)config;
 
 + (void)systemShareWithImage:(UIImage *)image
                         Text:(NSString *)text

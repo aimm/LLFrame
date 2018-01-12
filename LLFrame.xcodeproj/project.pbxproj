@@ -27,6 +27,7 @@
 		3C5EFC2E1FFF12400064BDD3 /* JPushHelper.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C5EFC2D1FFF12400064BDD3 /* JPushHelper.m */; };
 		3C5EFC311FFF23A50064BDD3 /* LLDataEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C5EFC301FFF23A50064BDD3 /* LLDataEntity.m */; };
 		3C5EFC341FFF2FF30064BDD3 /* BestListDataEntity.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C5EFC331FFF2FF30064BDD3 /* BestListDataEntity.m */; };
+		3C808D9C200884EF00B63AC5 /* AllCateCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 3C808D9A200884EE00B63AC5 /* AllCateCollectionView.m */; };
 		3CA819281FFB27740051B127 /* budejie.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CA819271FFB27740051B127 /* budejie.png */; };
 		3CAB796A1FF8EBFA00F265A6 /* TextStyle.m in Sources */ = {isa = PBXBuildFile; fileRef = 3CAB79691FF8EBFA00F265A6 /* TextStyle.m */; };
 		3CC54F2F2001BEB9009A437C /* load_failed_empty@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = 3CC54F2D2001BEB8009A437C /* load_failed_empty@3x.png */; };
@@ -152,6 +153,8 @@
 		3C5EFC301FFF23A50064BDD3 /* LLDataEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = LLDataEntity.m; sourceTree = "<group>"; };
 		3C5EFC321FFF2FF30064BDD3 /* BestListDataEntity.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = BestListDataEntity.h; sourceTree = "<group>"; };
 		3C5EFC331FFF2FF30064BDD3 /* BestListDataEntity.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = BestListDataEntity.m; sourceTree = "<group>"; };
+		3C808D9A200884EE00B63AC5 /* AllCateCollectionView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AllCateCollectionView.m; sourceTree = "<group>"; };
+		3C808D9B200884EF00B63AC5 /* AllCateCollectionView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AllCateCollectionView.h; sourceTree = "<group>"; };
 		3CA819271FFB27740051B127 /* budejie.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = budejie.png; sourceTree = "<group>"; };
 		3CAB79641FF8DBC200F265A6 /* ListType.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ListType.h; sourceTree = "<group>"; };
 		3CAB79681FF8EBFA00F265A6 /* TextStyle.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TextStyle.h; sourceTree = "<group>"; };
@@ -649,6 +652,8 @@
 			children = (
 				3CCFF0D41FF7DD3300ACD9BB /* InterestVC.h */,
 				3CCFF0D51FF7DD3300ACD9BB /* InterestVC.m */,
+				3C808D9B200884EF00B63AC5 /* AllCateCollectionView.h */,
+				3C808D9A200884EE00B63AC5 /* AllCateCollectionView.m */,
 			);
 			path = "关注";
 			sourceTree = "<group>";
@@ -1168,6 +1173,7 @@
 				"${SRCROOT}/Pods/Target Support Files/Pods-LLFrame/Pods-LLFrame-frameworks.sh",
 				"${BUILT_PRODUCTS_DIR}/AFNetworking/AFNetworking.framework",
 				"${BUILT_PRODUCTS_DIR}/CHTCollectionViewWaterfallLayout/CHTCollectionViewWaterfallLayout.framework",
+				"${BUILT_PRODUCTS_DIR}/CYLTabBarController/CYLTabBarController.framework",
 				"${BUILT_PRODUCTS_DIR}/ChameleonFramework/ChameleonFramework.framework",
 				"${BUILT_PRODUCTS_DIR}/DACircularProgress/DACircularProgress.framework",
 				"${BUILT_PRODUCTS_DIR}/DZNEmptyDataSet/DZNEmptyDataSet.framework",
@@ -1205,6 +1211,7 @@
 			outputPaths = (
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/AFNetworking.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CHTCollectionViewWaterfallLayout.framework",
+				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/CYLTabBarController.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/ChameleonFramework.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DACircularProgress.framework",
 				"${TARGET_BUILD_DIR}/${FRAMEWORKS_FOLDER_PATH}/DZNEmptyDataSet.framework",
@@ -1337,6 +1344,7 @@
 				3CCFF09E1FF7CEBD00ACD9BB /* RootCVC.m in Sources */,
 				3CD3F7B01FF86FBA0031B275 /* BestPageApi.m in Sources */,
 				3CF1124C1FFE7751008F54FC /* AppTheme.m in Sources */,
+				3C808D9C200884EF00B63AC5 /* AllCateCollectionView.m in Sources */,
 				3CCFF0D91FF7DD4100ACD9BB /* MeVC.m in Sources */,
 				3CD3F7D11FF87D230031B275 /* BestListCellModel.m in Sources */,
 				3C20EBF11FE898FB0014B7F1 /* AppDelegate.m in Sources */,

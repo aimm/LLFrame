@@ -31,79 +31,96 @@
     static MainTabBarController *_mainTabBarController = nil;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        _mainTabBarController = [MainTabBarController new];
+        
+        NSArray *viewControllers = [self setupViewControllers];
+        NSArray *atts = [self setupAttributes];
+        
+        _mainTabBarController = [[MainTabBarController alloc] initWithViewControllers:viewControllers tabBarItemsAttributes:atts];
+        
+        [self customizeTabBarAppearance:_mainTabBarController];
     });
     return _mainTabBarController;
+}
+
++ (BOOL)havePlusButton
+{
+    return YES;
 }
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    [self setupViewControllers];
-    
     [self setupGuides];
 }
 
 #pragma mark -
-- (void)setupViewControllers
++ (NSArray *)setupViewControllers
 {
     BestPageVC *bestPageVC = [BestPageVC new];
-    RootNav *bestNav = [self setupNavWithViewController:bestPageVC
-                                                  title:@"不得姐"
-                                        normalImageName:@""
-                                      selectedImageName:@""];
+    RootNav *bestNav = [[RootNav alloc] initWithRootViewController:bestPageVC];
     
     FreshPageVC *freshPageVC = [FreshPageVC new];
-    RootNav *freshNav = [self setupNavWithViewController:freshPageVC
-                                                   title:@"微博"
-                                         normalImageName:@""
-                                       selectedImageName:@""];
-    
-    PostVC *postVC = [PostVC new];
-    RootNav *postNav = [self setupNavWithViewController:postVC
-                                                  title:@"没想好"
-                                        normalImageName:@""
-                                      selectedImageName:@""];
+    RootNav *freshNav = [[RootNav alloc] initWithRootViewController:freshPageVC];
     
     InterestVC *interestVC = [InterestVC new];
-    RootNav *interestNav = [self setupNavWithViewController:interestVC
-                                                      title:@"没想好"
-                                            normalImageName:@""
-                                          selectedImageName:@""];
+    RootNav *interestNav = [[RootNav alloc] initWithRootViewController:interestVC];
     
     MeVC *meVC = [MeVC new];
-    RootNav *meNav = [self setupNavWithViewController:meVC
-                                                title:@"我"
-                                      normalImageName:@""
-                                    selectedImageName:@""];
+    RootNav *meNav = [[RootNav alloc] initWithRootViewController:meVC];
     
-    self.viewControllers = @[bestNav,freshNav,postNav,interestNav,meNav];
+    return @[bestNav,freshNav,interestNav,meNav];
 }
 
-- (RootNav *)setupNavWithViewController:(UIViewController *)vc
-                                  title:(NSString *)title
-                        normalImageName:(NSString *)normalImageName
-                      selectedImageName:(NSString *)selectedImageName
++ (NSArray *)setupAttributes
 {
-    RootNav *nav = [[RootNav alloc] initWithRootViewController:vc];
-    vc.navigationItem.title = title;
-    nav.hidesNavigationBarHairline = YES;
+    NSDictionary *first = @{
+                            CYLTabBarItemTitle : @"百思",
+                            CYLTabBarItemImage : @"home_normal",
+                            CYLTabBarItemSelectedImage : @"home_highlight",
+                            };
     
-    UIImage *normalImage = [UIImage imageNamed:normalImageName];
-    UIImage *selectedImage = [UIImage imageNamed:selectedImageName];
+    NSDictionary *second = @{
+                             CYLTabBarItemTitle : @"第二个",
+                             CYLTabBarItemImage : @"mycity_normal",
+                             CYLTabBarItemSelectedImage : @"mycity_highlight",
+                             };
     
-    UITabBarItem *item = [[UITabBarItem alloc] initWithTitle:title image:normalImage selectedImage:selectedImage];
+    NSDictionary *third = @{
+                            CYLTabBarItemTitle : @"第三个",
+                            CYLTabBarItemImage : @"message_normal",
+                            CYLTabBarItemSelectedImage : @"message_highlight",
+                            };
     
-    [item setTitleTextAttributes:@{NSForegroundColorAttributeName:[UIColor blackColor]}
-                        forState:UIControlStateNormal];
+    NSDictionary *fourth = @{
+                             CYLTabBarItemTitle : @"我",
+                             CYLTabBarItemImage : @"account_normal",
+                             CYLTabBarItemSelectedImage : @"account_highlight"
+                             };
     
-    [item setTitleTextAttributes:@{NSForegroundColorAttributeName:kTheme.themeColor}
-                        forState:UIControlStateSelected];
+    return @[first,second,third,fourth];
+}
+
+/**
+ *  更多TabBar自定义设置
+ */
++ (void)customizeTabBarAppearance:(CYLTabBarController *)tabBarController
+{
+    // 自定义 TabBar 高度
+    tabBarController.tabBarHeight = kTabBarHeight;
     
-    [nav setTabBarItem:item];
+    // 普通状态下的文字属性
+    NSMutableDictionary *normalAttrs = [NSMutableDictionary dictionary];
+    normalAttrs[NSForegroundColorAttributeName] = [UIColor flatGrayColor];
     
-    return nav;
+    // 选中状态下的文字属性
+    NSMutableDictionary *selectedAttrs = [NSMutableDictionary dictionary];
+    selectedAttrs[NSForegroundColorAttributeName] = kTheme.themeColor;
+    
+    // 设置文字属性
+    UITabBarItem *tabBar = [UITabBarItem appearance];
+    [tabBar setTitleTextAttributes:normalAttrs forState:UIControlStateNormal];
+    [tabBar setTitleTextAttributes:selectedAttrs forState:UIControlStateSelected];
 }
 
 #pragma mark -

@@ -21,6 +21,7 @@ PODS:
   - CHTCollectionViewWaterfallLayout (0.9.7):
     - CHTCollectionViewWaterfallLayout/ObjC (= 0.9.7)
   - CHTCollectionViewWaterfallLayout/ObjC (0.9.7)
+  - CYLTabBarController (1.16.1)
   - DACircularProgress (2.3.1)
   - DZNEmptyDataSet (1.8.1)
   - EAIntroView (2.12.0):
@@ -39,26 +40,6 @@ PODS:
   - JPush (3.0.7):
     - JCore (~> 1.1.6)
   - MJRefresh (3.1.15.1)
-  - mob_sharesdk (4.0.4):
-    - mob_sharesdk/ShareSDK (= 4.0.4)
-    - MOBFoundation
-  - mob_sharesdk/ShareSDK (4.0.4):
-    - MOBFoundation
-  - mob_sharesdk/ShareSDKConfigurationFile (4.0.4):
-    - MOBFoundation
-  - mob_sharesdk/ShareSDKExtension (4.0.4):
-    - MOBFoundation
-  - mob_sharesdk/ShareSDKPlatforms/Copy (4.0.4):
-    - MOBFoundation
-  - mob_sharesdk/ShareSDKPlatforms/QQ (4.0.4):
-    - MOBFoundation
-  - mob_sharesdk/ShareSDKPlatforms/SinaWeibo (4.0.4):
-    - MOBFoundation
-  - mob_sharesdk/ShareSDKPlatforms/WeChatFull (4.0.4):
-    - MOBFoundation
-  - mob_sharesdk/ShareSDKUI (4.0.4):
-    - MOBFoundation
-  - MOBFoundation (3.0.6)
   - NJKWebViewProgress (0.2.3):
     - NJKWebViewProgress/Core (= 0.2.3)
     - NJKWebViewProgress/ProgressView (= 0.2.3)
@@ -114,6 +95,7 @@ DEPENDENCIES:
   - Bugly
   - ChameleonFramework
   - CHTCollectionViewWaterfallLayout (~> 0.9)
+  - CYLTabBarController
   - DZNEmptyDataSet
   - EAIntroView
   - FDFullscreenPopGesture (= 1.1)
@@ -123,14 +105,6 @@ DEPENDENCIES:
   - IQKeyboardManager
   - JPush
   - MJRefresh
-  - mob_sharesdk
-  - mob_sharesdk/ShareSDKConfigurationFile
-  - mob_sharesdk/ShareSDKExtension
-  - mob_sharesdk/ShareSDKPlatforms/Copy
-  - mob_sharesdk/ShareSDKPlatforms/QQ
-  - mob_sharesdk/ShareSDKPlatforms/SinaWeibo
-  - mob_sharesdk/ShareSDKPlatforms/WeChatFull
-  - mob_sharesdk/ShareSDKUI
   - NJKWebViewProgress
   - PYSearch
   - ReactiveObjC (~> 3.0.0)
@@ -151,6 +125,7 @@ SPEC CHECKSUMS:
   Bugly: 00c8701f2bebab4887771ba43afbf51334009742
   ChameleonFramework: d21a3cc247abfe5e37609a283a8238b03575cf64
   CHTCollectionViewWaterfallLayout: 9d11068fafecac106695bb5a5d6d0f738483b598
+  CYLTabBarController: ed6536b8d2df412bc4304dc4b633d4860f15664e
   DACircularProgress: 4dd437c0fc3da5161cb289e07ac449493d41db71
   DZNEmptyDataSet: 9525833b9e68ac21c30253e1d3d7076cc828eaa7
   EAIntroView: 249559079ddfdbe80e5bcb755c04c3b964b2ac27
@@ -164,8 +139,6 @@ SPEC CHECKSUMS:
   JCore: 18fc8725124f26e55625eaf224659b3a999dcf63
   JPush: 111b79b8a0169ab8fd4c486dac3ed166ed69293e
   MJRefresh: 5f8552bc25ca8751c010f621c1098dbdaacbccd6
-  mob_sharesdk: b3ac49261b0e56d9e305d473c70bcde2e3a6e8ff
-  MOBFoundation: 6f6ec1c2513278551f1a808b5692e983d99e5069
   NJKWebViewProgress: f481fd424cb5ecc27eacae11b5397db92fba9a4d
   PINCache: 98e7b1ef782824ad231ade51987c218b758c30d8
   PINOperation: ac23db44796d4a564ecf9b5ea7163510f579b71d
@@ -187,6 +160,6 @@ SPEC CHECKSUMS:
   YTKNetwork: df8a7a5597bda1664a4efaa7ef871a818a887fe0
   YYKit: 7cda43304a8dc3696c449041e2cb3107b4e236e7
 
-PODFILE CHECKSUM: c203b533389178abb8e9be292fbd63b5b68e3ce4
+PODFILE CHECKSUM: 29dbed4a5148ab1cf3025a0461ba746f1770b908
 
 COCOAPODS: 1.3.1

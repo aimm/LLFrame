@@ -1,0 +1,744 @@
+//
+//  AllCateCollectionView.m
+//  Wlkc-Personal
+//
+//  Created by hyxk on 2017/11/22.
+//  Copyright © 2017年 HeBeiShuoYun. All rights reserved.
+//
+
+#import "AllCateCollectionView.h"
+
+#pragma mark - UICollectionView (BMDragCellCollectionViewRect)
+
+@implementation UICollectionView (BMRect)
+
+- (CGRect)bm_rectForSection:(NSInteger)section
+{
+    NSInteger sectionNum = [self.dataSource collectionView:self numberOfItemsInSection:section];
+    
+    if (sectionNum <= 0) return CGRectZero;
+    
+    NSIndexPath *firsIndexPath = [NSIndexPath indexPathForItem:0 inSection:section];
+    CGRect firstRect = [self bm_rectForRowAtIndexPath:firsIndexPath];
+    
+    NSIndexPath *lastIndexPath = [NSIndexPath indexPathForItem:sectionNum-1 inSection:section];
+    CGRect lastRect = [self bm_rectForRowAtIndexPath:lastIndexPath];
+    
+    // 这里只有垂直滚动，直接返回即可
+    return CGRectMake(0, CGRectGetMinY(firstRect), CGRectGetWidth(self.frame), CGRectGetMaxY(lastRect) - CGRectGetMidY(firstRect));
+}
+
+- (CGRect)bm_rectForRowAtIndexPath:(NSIndexPath *)indexPath
+{
+    return [self layoutAttributesForItemAtIndexPath:indexPath].frame;
+}
+
+@end
+
+typedef NS_ENUM(NSUInteger, BMDragCellCollectionViewScrollDirection) {
+    BMDragCellCollectionViewScrollDirectionNone = 0,
+    BMDragCellCollectionViewScrollDirectionLeft,
+    BMDragCellCollectionViewScrollDirectionRight,
+    BMDragCellCollectionViewScrollDirectionUp,
+    BMDragCellCollectionViewScrollDirectionDown,
+};
+
+@interface AllCateCollectionView ()
+
+///< 截图快照
+@property (strong, nonatomic) UIView *snapedView;
+
+///< 长按手势
+@property (strong, nonatomic) UILongPressGestureRecognizer *longGesture;
+
+///< 定时器
+@property (strong, nonatomic) CADisplayLink *edgeTimer;
+
+///< 旧的IndexPath
+@property (strong, nonatomic) NSIndexPath *oldIndexPath;
+
+///< 当前路径
+@property (strong, nonatomic) NSIndexPath *currentIndexPath;
+
+///< 旧的位置
+@property (assign, nonatomic) CGPoint oldPoint;
+
+///< 最后的触摸点
+@property (assign, nonatomic) CGPoint lastPoint;
+
+///< 是否正在拖动
+@property (assign, nonatomic) BOOL isEndDrag;
+
+/// 外部改为了只读，内部根据是否处于编辑状态做修改
+@property (nonatomic, assign) NSTimeInterval minimumPressDuration;
+
+@end
+
+@implementation AllCateCollectionView
+
+@dynamic delegate, dataSource;
+
+- (instancetype)initWithFrame:(CGRect)frame collectionViewLayout:(UICollectionViewLayout *)layout
+{
+    self = [super initWithFrame:frame collectionViewLayout:layout];
+    if (self)
+    {
+        [self initConfiguration];
+    }
+    return self;
+}
+
+- (instancetype)initWithCoder:(NSCoder *)aDecoder
+{
+    if (self = [super initWithCoder:aDecoder])
+    {
+        [self initConfiguration];
+    }
+    return self;
+}
+
+- (void)initConfiguration
+{
+    _canDrag = YES;
+    _isEditing = NO;
+    _minimumPressDuration = .5f;
+    _dragZoomScale = 1.2f;
+    _dragCellAlpha = 1.0;
+    
+    [self addGestureRecognizer:self.longGesture];
+    
+    // iOS 10 新特性 对UICollectionView做了优化，但是这里如果使用了会导致bug
+    if ([[[UIDevice currentDevice] systemVersion] floatValue] >= 10.0)
+    {
+        super.prefetchingEnabled = NO;
+    }
+}
+
+- (void)dealloc
+{
+    [self _stopEdgeTimer];
+}
+
+#pragma mark - getters setters
+
+- (void)setCanDrag:(BOOL)canDrag
+{
+    _canDrag = canDrag;
+    self.longGesture.enabled = _canDrag;
+}
+
+- (void)setMinimumPressDuration:(NSTimeInterval)minimumPressDuration
+{
+    _minimumPressDuration = minimumPressDuration;
+    self.longGesture.minimumPressDuration = minimumPressDuration;
+}
+
+- (void)setDragZoomScale:(CGFloat)dragZoomScale
+{
+    if (dragZoomScale < 0) dragZoomScale = 0.01;
+    _dragZoomScale = dragZoomScale;
+}
+
+- (UILongPressGestureRecognizer *)longGesture
+{
+    if (!_longGesture)
+    {
+        _longGesture = [[UILongPressGestureRecognizer alloc] initWithTarget:self action:@selector(handlelongGesture:)];
+        _longGesture.minimumPressDuration = _minimumPressDuration;
+    }
+    return _longGesture;
+}
+
+// iOS 10 新特性 对UICollectionView做了优化，但是这里如果使用了会导致bug,重写此方法是为了外面的使用者无法修改其值
+- (void)setPrefetchingEnabled:(BOOL)prefetchingEnabled {}
+
+#pragma mark - 私有方法
+
+- (UICollectionViewCell *)dequeueReusableCellWithReuseIdentifier:(NSString *)identifier forIndexPath:(NSIndexPath *)indexPath
+{
+    UICollectionViewCell *cell = [super dequeueReusableCellWithReuseIdentifier:identifier forIndexPath:indexPath];
+    
+    // 处理复用时的问题，为了保证显示的正确性
+    if (_isEndDrag)
+    {
+        cell.hidden = NO;
+        return cell;
+    }
+    
+    cell.hidden = (self.oldIndexPath &&
+                   self.oldIndexPath.item == indexPath.item &&
+                   self.oldIndexPath.section == indexPath.section);
+    
+    return cell;
+}
+
+- (NSIndexPath *)_getChangedIndexPath
+{
+    __block NSIndexPath *index = nil;
+    CGPoint point = [self.longGesture locationInView:self];
+    
+    // 遍历拖拽的Cell的中心点在哪一个Cell里
+    [[self visibleCells] enumerateObjectsUsingBlock:^(__kindof UICollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        if (CGRectContainsPoint(obj.frame, point))
+        {
+            index = [self indexPathForCell:obj];
+            *stop = YES;
+        }
+    }];
+    
+    // 找到而且不是当前的Cell就返回此 index
+    if (index)
+    {
+        if (index.item == self.oldIndexPath.item &&
+            index.row == self.oldIndexPath.row)
+        {
+            return nil;
+        }
+        return index;
+    }
+    
+    // 获取最应该交换的Cell
+    __block CGFloat width = MAXFLOAT;
+    __weak typeof(self) weakSelf = self;
+    [[self visibleCells] enumerateObjectsUsingBlock:^(__kindof UICollectionViewCell * _Nonnull obj, NSUInteger idx, BOOL * _Nonnull stop) {
+        
+        if (CGRectContainsPoint(obj.frame, point))
+        {
+            index = [self indexPathForCell:obj];
+            *stop = YES;
+        }
+        
+        __strong typeof(weakSelf) self = weakSelf;
+        CGPoint p1 = self.snapedView.center;
+        CGPoint p2 = obj.center;
+        
+        // 计算距离
+        CGFloat distance = sqrt(pow((p1.x - p2.x), 2) + pow((p1.y - p2.y), 2));
+        if (distance < width)
+        {
+            width = distance;
+            index = [self indexPathForCell:obj];
+        }
+    }];
+    
+    if (!index) return nil;
+    
+    if ((index.item == self.oldIndexPath.item) &&
+        (index.row == self.oldIndexPath.row))
+    {
+        // 最近的就是隐藏的Cell时,return nil
+        return nil;
+    }
+    
+    return index;
+}
+
+// 处理临界点问题
+- (BMDragCellCollectionViewScrollDirection)_setScrollDirection
+{
+    if (self.bounds.size.height + self.contentOffset.y - _snapedView.center.y < _snapedView.bounds.size.height / 2 && self.bounds.size.height + self.contentOffset.y < self.contentSize.height)
+    {
+        return BMDragCellCollectionViewScrollDirectionDown;
+    }
+    
+    if (_snapedView.center.y - self.contentOffset.y < _snapedView.bounds.size.height / 2 && self.contentOffset.y > 0)
+    {
+        return BMDragCellCollectionViewScrollDirectionUp;
+    }
+    
+    if (self.bounds.size.width + self.contentOffset.x - _snapedView.center.x < _snapedView.bounds.size.width / 2 && self.bounds.size.width + self.contentOffset.x < self.contentSize.width)
+    {
+        return BMDragCellCollectionViewScrollDirectionRight;
+    }
+    
+    if (_snapedView.center.x - self.contentOffset.x < _snapedView.bounds.size.width / 2 && self.contentOffset.x > 0)
+    {
+        return BMDragCellCollectionViewScrollDirectionLeft;
+    }
+    
+    return BMDragCellCollectionViewScrollDirectionNone;
+}
+
+// 处理UICollectionView数据源
+- (void)_updateSourceData
+{
+    // 获取数据源
+    NSMutableArray *array = [[self.dataSource dataSourceWithDragCellCollectionView:self] mutableCopy];
+    
+    // ==========处理数据
+    BOOL dataTypeCheck = ([self numberOfSections] != 1 || ([self numberOfSections] == 1 && [array[0] isKindOfClass:[NSArray class]]));
+    
+    if (dataTypeCheck)
+    {
+        for (int i = 0; i < array.count; i ++)
+        {
+            [array replaceObjectAtIndex:i withObject:[array[i] mutableCopy]];
+        }
+    }
+    
+    if (_currentIndexPath.section == _oldIndexPath.section)
+    {
+        NSMutableArray *orignalSection = dataTypeCheck ? (NSMutableArray *)array[_oldIndexPath.section] : (NSMutableArray *)array;
+        
+        if (_currentIndexPath.item > _oldIndexPath.item)
+        {
+            for (NSUInteger i = _oldIndexPath.item; i < _currentIndexPath.item ; i ++)
+            {
+                [orignalSection exchangeObjectAtIndex:i withObjectAtIndex:i + 1];
+            }
+        }
+        else
+        {
+            for (NSUInteger i = _oldIndexPath.item; i > _currentIndexPath.item ; i --)
+            {
+                [orignalSection exchangeObjectAtIndex:i withObjectAtIndex:i - 1];
+            }
+        }
+    }
+    else
+    {
+        NSMutableArray *orignalSection = array[_oldIndexPath.section];
+        NSMutableArray *currentSection = array[_currentIndexPath.section];
+        [currentSection insertObject:orignalSection[_oldIndexPath.item] atIndex:_currentIndexPath.item];
+        [orignalSection removeObject:orignalSection[_oldIndexPath.item]];
+    }
+    // ==========处理数据
+    
+    // 更新外面的数据源
+    [self.delegate dragCellCollectionView:self newDataArrayAfterMove:array];
+}
+
+- (void)_setEdgeTimer
+{
+    if (!_edgeTimer)
+    {
+        _edgeTimer = [CADisplayLink displayLinkWithTarget:self selector:@selector(_edgeScroll)];
+        [_edgeTimer addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSRunLoopCommonModes];
+    }
+}
+
+- (void)_stopEdgeTimer
+{
+    if (_edgeTimer)
+    {
+        [_edgeTimer invalidate];
+        _edgeTimer = nil;
+    }
+}
+
+- (void)_edgeScroll
+{
+    BMDragCellCollectionViewScrollDirection scrollDirection = [self _setScrollDirection];
+    
+    switch (scrollDirection)
+    {
+        case BMDragCellCollectionViewScrollDirectionLeft:
+        {
+            // 这里的动画必须设为NO
+            [self setContentOffset:CGPointMake(self.contentOffset.x - 4, self.contentOffset.y) animated:NO];
+            _snapedView.center = CGPointMake(_snapedView.center.x - 4, _snapedView.center.y);
+            _lastPoint.x -= 4;
+        }
+            break;
+            
+        case BMDragCellCollectionViewScrollDirectionRight:
+        {
+            [self setContentOffset:CGPointMake(self.contentOffset.x + 4, self.contentOffset.y) animated:NO];
+            _snapedView.center = CGPointMake(_snapedView.center.x + 4, _snapedView.center.y);
+            _lastPoint.x += 4;
+        }
+            break;
+            
+        case BMDragCellCollectionViewScrollDirectionUp:
+        {
+            [self setContentOffset:CGPointMake(self.contentOffset.x, self.contentOffset.y - 4) animated:NO];
+            _snapedView.center = CGPointMake(_snapedView.center.x, _snapedView.center.y - 4);
+            _lastPoint.y -= 4;
+        }
+            break;
+            
+        case BMDragCellCollectionViewScrollDirectionDown:
+        {
+            [self setContentOffset:CGPointMake(self.contentOffset.x, self.contentOffset.y + 4) animated:NO];
+            _snapedView.center = CGPointMake(_snapedView.center.x, _snapedView.center.y + 4);
+            _lastPoint.y += 4;
+        }
+            break;
+            
+        default:
+            break;
+    }
+    
+    if (scrollDirection == BMDragCellCollectionViewScrollDirectionNone) return;
+    
+    // 如果Cell 拖拽到了边沿时
+    // 截图视图位置移动
+    [UIView animateWithDuration:0.1 animations:^{
+        _snapedView.center = _lastPoint;
+    }];
+    
+    // 获取应该交换的Cell的位置
+    NSIndexPath *index = [self _getChangedIndexPath];
+    
+    if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionView:changedDragAtPoint:indexPath:)])
+    {
+        [self.delegate dragCellCollectionView:self changedDragAtPoint:_lastPoint indexPath:index];
+    }
+    
+    if (!index) return;
+    
+    // 是否可以交换
+    if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionViewShouldBeginExchange:sourceIndexPath:toIndexPath:)])
+    {
+        if (![self.delegate dragCellCollectionViewShouldBeginExchange:self sourceIndexPath:_oldIndexPath toIndexPath:index])
+        {
+            return;
+        }
+    }
+    
+    _currentIndexPath = index;
+    self.oldPoint = [self cellForItemAtIndexPath:_currentIndexPath].center;
+    
+    // 更新数据源
+    [self _updateSourceData];
+    
+    // 移动 会调用willMoveToIndexPath方法更新数据源
+    [self moveItemAtIndexPath:_oldIndexPath toIndexPath:_currentIndexPath];
+    
+    // 设置移动后的起始indexPath
+    _oldIndexPath = _currentIndexPath;
+    
+    // 为了防止在缓存池取出的Cell已隐藏,
+    // 以后可以优化
+    [self reloadItemsAtIndexPaths:@[_oldIndexPath]];
+}
+
+#pragma mark - 设置编辑状态
+- (void)setIsEditing:(BOOL)isEditing
+{
+    _isEditing = isEditing;
+    
+    // 修改长按响应时间
+    self.minimumPressDuration = _isEditing ? 0.25f : 0.5f;
+    
+    // 获取并修改数据源
+    if (self.dataSource && [self.dataSource respondsToSelector:@selector(dataSourceWithDragCellCollectionView:)])
+    {
+        NSArray *dataSource = [self.dataSource dataSourceWithDragCellCollectionView:self];
+        
+        // 修改 我的分类 编辑状态
+        NSArray * myCates = dataSource[0];
+        for (WLCateModel *model in myCates)
+        {
+            model.edited = _isEditing;
+        }
+        /*
+         刷新视图且取消默认带的隐式动画，解决截图不对的问题
+         */
+        [UIView performWithoutAnimation:^{
+            [self reloadSections:[NSIndexSet indexSetWithIndex:0]];
+        }];
+        
+        // 修改 推荐分类 编辑状态
+        NSArray * recomCates = dataSource[1];
+        if (recomCates.count > 0)
+        {
+            for (WLCateModel *model in recomCates)
+            {
+                model.edited = _isEditing;
+            }
+            [UIView performWithoutAnimation:^{
+                [self reloadSections:[NSIndexSet indexSetWithIndex:1]];
+            }];
+        }
+    }
+}
+
+#pragma mark - 事件响应
+
+- (void)handlelongGesture:(UILongPressGestureRecognizer *)longGesture
+{
+    CGPoint point = [longGesture locationInView:self];
+    NSIndexPath *indexPath = [self indexPathForItemAtPoint:point];
+    
+    switch (longGesture.state)
+    {
+        case UIGestureRecognizerStateBegan:
+        {
+            self.userInteractionEnabled = NO;
+            
+            // 进入编辑状态
+            if (self.isEditing == NO) self.isEditing = YES;
+            
+            // 通知代理开始拖拽(进入编辑状态)
+            if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionView:beganDragAtPoint:indexPath:)])
+            {
+                [self.delegate dragCellCollectionView:self beganDragAtPoint:point indexPath:indexPath];
+            }
+            
+            // 手势开始
+            // 判断手势落点位置是否在Item上
+            _oldIndexPath = indexPath;
+            
+            // 没有按在cell 上就 break
+            if (_oldIndexPath == nil)
+            {
+                self.longGesture.enabled = NO;
+                
+                dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                    
+                    if (_canDrag)
+                    {
+                        self.longGesture.enabled = YES;
+                    }
+                });
+                break;
+            }
+            
+            // 将要移动某个cell
+            if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionViewShouldBeginMove:indexPath:)])
+            {
+                // 判断此indexPath是否允许拖动
+                if (![self.delegate dragCellCollectionViewShouldBeginMove:self indexPath:_oldIndexPath])
+                {
+                    _oldIndexPath = nil;
+                    self.longGesture.enabled = NO;
+                    
+                    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+                        
+                        if (_canDrag)
+                        {
+                            self.longGesture.enabled = YES;
+                        }
+                    });
+                    break;
+                }
+            }
+            
+            self.isEndDrag = NO;
+            
+            // 取出正在长按的cell
+            UICollectionViewCell *cell = [self cellForItemAtIndexPath:_oldIndexPath];
+            self.oldPoint = cell.center;
+            
+            /*
+             使用系统截图功能，得到cell的快照view，这里改为了YES，不然总截到高亮的白图
+             */
+            _snapedView = [cell snapshotViewAfterScreenUpdates:YES];
+            
+            // 设置frame
+            _snapedView.frame = cell.frame;
+            
+            // 添加到 collectionView 不然无法显示
+            [self addSubview:_snapedView];
+            
+            //截图后隐藏当前cell
+            cell.hidden = YES;
+            
+            // 获取当前触摸的中心点
+            CGPoint currentPoint = point;
+            
+            // 动画放大和移动到触摸点下面
+            [UIView animateWithDuration:0.25 animations:^{
+                
+                _snapedView.transform = CGAffineTransformMakeScale(_dragZoomScale, _dragZoomScale);
+                _snapedView.center = CGPointMake(currentPoint.x, currentPoint.y);
+                _snapedView.alpha = _dragCellAlpha;
+            }];
+            
+            // 开启collectionView的边缘自动滚动检测
+            [self _setEdgeTimer];
+        }
+            break;
+            
+        case UIGestureRecognizerStateChanged:
+        {
+            if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionView:changedDragAtPoint:indexPath:)])
+            {
+                [self.delegate dragCellCollectionView:self changedDragAtPoint:point indexPath:indexPath];
+            }
+            
+            // 当前手指位置
+            _lastPoint = point;
+            // 截图视图位置移动
+            [UIView animateWithDuration:0.1 animations:^{
+                _snapedView.center = _lastPoint;
+            }];
+            
+            NSIndexPath *index = [self _getChangedIndexPath];
+            
+            // 没有取到或者距离隐藏的最近时就返回
+            if (!index)
+            {
+                break;
+            }
+            
+            if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionViewShouldBeginExchange:sourceIndexPath:toIndexPath:)])
+            {
+                if (![self.delegate dragCellCollectionViewShouldBeginExchange:self sourceIndexPath:_oldIndexPath toIndexPath:index])
+                {
+                    break;
+                }
+            }
+            
+            _currentIndexPath = index;
+            self.oldPoint = [self cellForItemAtIndexPath:_currentIndexPath].center;
+            
+            // 操作
+            [self _updateSourceData];
+            
+            // 移动 会调用willMoveToIndexPath方法更新数据源
+            [self moveItemAtIndexPath:_oldIndexPath toIndexPath:_currentIndexPath];
+            // 设置移动后的起始indexPath
+            _oldIndexPath = _currentIndexPath;
+            [self reloadItemsAtIndexPaths:@[_oldIndexPath]];
+            break;
+        }
+            break;
+            
+        default:
+        {
+            self.userInteractionEnabled = YES;
+            
+            if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionView:endedDragAtPoint:indexPath:)])
+            {
+                [self.delegate dragCellCollectionView:self endedDragAtPoint:point indexPath:indexPath];
+            }
+            
+            if (longGesture.isEnabled)
+            {
+                if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionView:endedDragAutomaticOperationAtPoint:section:indexPath:)])
+                {
+                    NSInteger section = -1;
+                    NSInteger sec = [self.dataSource numberOfSectionsInCollectionView:self];
+                    
+                    for (NSInteger i = 0; i < sec; i++)
+                    {
+                        if (CGRectContainsPoint([self bm_rectForSection:i], point))
+                        {
+                            section = i;
+                            break;
+                        }
+                    }
+                    
+                    if (![self.delegate dragCellCollectionView:self endedDragAutomaticOperationAtPoint:point section:section indexPath:indexPath])
+                    {
+                        return;
+                    }
+                }
+                
+                if (!self.oldIndexPath)
+                {
+                    return;
+                }
+                
+                UICollectionViewCell *cell = [self cellForItemAtIndexPath:_oldIndexPath];
+                
+                // 结束动画过程中停止交互，防止出问题
+                self.userInteractionEnabled = NO;
+                // 结束拖拽了
+                self.isEndDrag = YES;
+                
+                // 给截图视图一个动画移动到隐藏cell的新位置
+                [UIView animateWithDuration:0.25 animations:^{
+                    
+                    if (!cell)
+                    {
+                        _snapedView.center = _oldPoint;
+                    }
+                    else
+                    {
+                        _snapedView.center = cell.center;
+                    }
+                    _snapedView.transform = CGAffineTransformMakeScale(1.0f, 1.0f);
+                    _snapedView.alpha = 1.0;
+                    
+                } completion:^(BOOL finished) {
+                    
+                    // 移除截图视图、显示隐藏的cell并开启交互
+                    [_snapedView removeFromSuperview];
+                    cell.hidden = NO;
+                    self.userInteractionEnabled = YES;
+                    
+                    if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionViewDidEndDrag:)])
+                    {
+                        [self.delegate dragCellCollectionViewDidEndDrag:self];
+                    }
+                }];
+            }
+            
+            // 关闭定时器
+            self.oldIndexPath = nil;
+            [self _stopEdgeTimer];
+        }
+            break;
+    }
+}
+
+- (void)dragMoveItemToIndexPath:(NSIndexPath *)newIndexPath
+{
+    if (self.isEndDrag) return;
+    
+    self.isEndDrag = YES;
+    self.longGesture.enabled = NO;
+    
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.25 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        
+        if (_canDrag) self.longGesture.enabled = YES;
+    });
+    
+    _currentIndexPath = newIndexPath;
+    
+    // 操作
+    [self _updateSourceData];
+    
+    // 移动 会调用willMoveToIndexPath方法更新数据源
+    [self moveItemAtIndexPath:_oldIndexPath toIndexPath:_currentIndexPath];
+    
+    // 设置移动后的起始indexPath
+    _oldIndexPath = newIndexPath;
+    [self reloadItemsAtIndexPaths:@[newIndexPath]];
+    
+    UICollectionViewCell *cell = [self cellForItemAtIndexPath:_oldIndexPath];
+    cell.hidden = YES;
+    
+    //结束动画过程中停止交互，防止出问题
+    self.userInteractionEnabled = NO;
+    // 结束拖拽了
+    self.isEndDrag = YES;
+    
+    // 给截图视图一个动画移动到隐藏cell的新位置
+    [UIView animateWithDuration:0.25 animations:^{
+        
+        if (!cell)
+        {
+            _snapedView.center = _oldPoint;
+        }
+        else
+        {
+            _snapedView.center = cell.center;
+        }
+        
+        _snapedView.transform = CGAffineTransformMakeScale(1.0f, 1.0f);
+        _snapedView.alpha = 1.0;
+        
+    } completion:^(BOOL finished) {
+        
+        // 移除截图视图、显示隐藏的cell并开启交互
+        [_snapedView removeFromSuperview];
+        cell.hidden = NO;
+        self.userInteractionEnabled = YES;
+        
+        if (self.delegate && [self.delegate respondsToSelector:@selector(dragCellCollectionViewDidEndDrag:)])
+        {
+            [self.delegate dragCellCollectionViewDidEndDrag:self];
+        }
+    }];
+    
+    // 关闭定时器
+    _oldIndexPath = nil;
+    [self _stopEdgeTimer];
+}
+
+@end

@@ -146,4 +146,9 @@
     }
 }
 
+- (void)setupWindow
+{
+    
+}
+
 @end
