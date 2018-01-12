@@ -83,4 +83,13 @@ pod 'INTULocationManager'
 # 选项卡
 pod 'CYLTabBarController'
 
+# Hook
+pod 'Aspects'
+
+# 动画
+pod 'lottie-ios'
+
+# 图表
+pod 'PNChart'
+
 end
