@@ -8,7 +8,7 @@
 
 #import "AppDelegate.h"
 #import "AppBuilder.h"
-// 主选项卡
+// 主选项卡-
 #import "MainTabBarController.h"
 
 @interface AppDelegate ()
